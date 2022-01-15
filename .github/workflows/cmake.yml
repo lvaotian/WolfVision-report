@@ -1,0 +1,47 @@
+name: CMake
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - ".vscode"
+      - "docs"
+      - "README.md"
+      - "LICENSE"
+      - "_config.yml"
+
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - ".vscode"
+      - "docs"
+      - "README.md"
+      - "LICENSE"
+      - "_config.yml"
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Update sources
+        run: sudo apt update
+
+      - name: Install dependencies
+        run: cat dependencies.txt | xargs sudo apt install -y
+
+      - name: Update submodules
+        run: git submodule update --init --recursive
+
+      - name: CMake Configure Ninja
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -GNinja
+
+      - name: Ninja Build
+        run: |
+          cd ${{github.workspace}}/build
+          ninja
